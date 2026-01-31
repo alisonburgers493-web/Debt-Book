@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>হিসাব বুক</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-gradient: linear-gradient(135deg, #e0f7fa, #b2ebf2, #80deea, #4dd0e1);
+    --container-bg: rgba(255, 255, 255, 0.92);
+    --text-color: #000;
+    --card-bg: #ffffff;
+    --modal-bg: white;
+    --shadow: rgba(0,0,0,0.12);
+  }
+  body.dark {
+    --bg-gradient: linear-gradient(135deg, #0d1b2a, #1b263b, #415a77, #778da9);
+    --container-bg: rgba(27, 38, 59, 0.92);
+    --text-color: #e0e0e0;
+    --card-bg: #1b263b;
+    --modal-bg: #1b263b;
+    --shadow: rgba(0,0,0,0.5);
+  }
+  body {
+    font-family: system-ui, sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    margin: 0;
+    padding: 15px 15px 100px 15px;
+    color: var(--text-color);
+  }
+  .container {
+    max-width: 680px;
+    margin: auto;
+    background: var(--container-bg);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px var(--shadow);
+    backdrop-filter: blur(6px);
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .add-btn {
+    background: #388e3c;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 17px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .search-toggle {
+    background: #1976d2;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    font-size: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .search-box {
+    display: none;
+    margin: 10px 0;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  ul { list-style: none; padding: 0; }
+  .item {
+    background: var(--card-bg);
+    border: 1px solid #e0e0e0;
+    margin: 12px 0;
+    padding: 16px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+  }
+  .item:hover { opacity: 0.95; }
+  .cleared {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.15);
+  }
+  .del {
+    background: #d32f2f;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+  }
+  .modal-box {
+    background: var(--modal-bg);
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    color: var(--text-color);
+    text-align: center;
+  }
+  .lang-option {
+    background: #1976d2;
+    color: white;
+    border: none;
+    padding: 18px;
+    margin: 15px 0;
+    width: 100%;
+    font-size: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .lang-option:hover { background: #1565c0; }
+  input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  button {
+    padding: 10px 20px;
+    margin: 6px 4px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .save-btn { background: #1976d2; color: white; }
+  .close-btn { background: #757575; color: white; }
+  #tot {
+    font-size: 24px;
+    font-weight: 700;
+    color: #c62828;
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  .settings-icon {
+    font-size: 32px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #1976d2, #42a5f5);
+    color: white;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+    transition: all 0.3s ease;
+  }
+  .settings-icon:hover {
+    transform: rotate(30deg) scale(1.15);
+    box-shadow: 0 6px 20px rgba(25, 118, 210, 0.6);
+  }
+
+  .settings-menu {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background: var(--modal-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px var(--shadow);
+    padding: 20px 25px;
+    display: none;
+    z-index: 150;
+    min-width: 280px;
+  }
+  .settings-menu label {
+    display: block;
+    margin: 18px 0;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .settings-menu label span {
+    color: #1976d2;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+
+  .clear-data {
+    background: #d32f2f;
+    color: white;
+    border: none;
+    padding: 12px;
+    margin-top: 25px;
+    width: 100%;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .dark-slider {
+    position: relative;
+    width: 100px;
+    height: 42px;
+    background: #ccc;
+    border-radius: 50px;
+    overflow: hidden;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .dark-track {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    font-size: 20px;
+  }
+  .dark-knob {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    background: white;
+    border-radius: 50%;
+    left: 2px;
+    top: 2px;
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  body.dark .dark-knob { left: 60px; }
+
+  .creator-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(25, 118, 210, 0.9);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 50px;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    z-index: 90;
+  }
+  .creator-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+  }
+  .creator-text {
+    background: rgba(255,255,255,0.95);
+    padding: 50px 70px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    max-width: 90%;
+  }
+  .creator-text h2 { margin: 0; font-size: 2.4rem; color: #1976d2; font-family: 'Poppins', sans-serif; }
+  .creator-text .name { font-size: 4rem; font-weight: 700; color: #0d47a1; font-family: 'Poppins', sans-serif; margin: 20px 0; text-shadow: 3px 3px 10px rgba(13,71,161,0.3); }
+
+  [lang="en"] .bn-text { display: none !important; }
+  [lang="bn"] .en-text { display: none !important; }
+  [lang="en"] .en-text { display: block !important; }
+</style>
+</head>
+<body lang="bn">
+
+<div class="header">
+  <h1 class="bn-text">হিসাব বুক</h1>
+  <h1 class="en-text">Debt Book</h1>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <button class="add-btn bn-text" id="add-new">+ নতুন পাওনাদার</button>
+    <button class="add-btn en-text" id="add-new-en">+ Add Creditor</button>
+    <button class="search-toggle" id="search-toggle">🔍</button>
+    <span class="settings-icon" id="settings">⚙️</span>
+  </div>
+</div>
+
+<div class="search-box" id="search-box">
+  <input type="text" id="search-input" placeholder="পাওনাদারের নাম বা হিসাব সার্চ করুন..." class="bn-text">
+  <input type="text" id="search-input-en" placeholder="Search by name or note..." class="en-text" style="display:none;">
+</div>
+
+<div class="container">
+  <ul id="projects"></ul>
+</div>
+
+<!-- Settings Menu -->
+<div class="settings-menu" id="settings-menu">
+  <label class="bn-text" id="change-lang-label"><span>1.</span> ভাষা পরিবর্তন</label>
+  <label class="en-text" id="change-lang-label-en"><span>1.</span> Change Language</label>
+
+  <label class="bn-text"><span>2.</span> ডার্ক মোড</label>
+  <label class="en-text"><span>2.</span> Dark Mode</label>
+  <div class="dark-slider" id="dark-toggle">
+    <div class="dark-track">
+      <span>☀️</span>
+      <span>🌙</span>
+    </div>
+    <div class="dark-knob"></div>
+  </div>
+
+  <button class="clear-data bn-text" id="clear-data">সব ডাটা মুছে ফেলুন</button>
+  <button class="clear-data en-text" id="clear-data-en" style="display:none;">Clear All Data</button>
+</div>
+
+<!-- Language Modal -->
+<div class="modal" id="lang-modal">
+  <div class="modal-box">
+    <h2 class="bn-text">ভাষা নির্বাচন করুন</h2>
+    <h2 class="en-text">Select Language</h2>
+    <button class="lang-option" id="select-bn">বাংলা</button>
+    <button class="lang-option" id="select-en">English</button>
+    <button class="close-btn bn-text" id="close-lang">বন্ধ</button>
+    <button class="close-btn en-text" id="close-lang-en" style="display:none;">Close</button>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal" id="add-modal">
+  <div class="modal-box">
+    <h2 class="bn-text">নতুন যোগ করুন</h2>
+    <h2 class="en-text">Add New Creditor</h2>
+    <input id="cred-name" placeholder="নাম (যেমন: রহিম ভাই)">
+    <textarea id="start-notes" rows="6" placeholder="হিসাব লিখুন (যেমন: ৪৫\n-২০ পরিশোধ)"></textarea>
+    <div style="text-align:right">
+      <button class="save-btn bn-text" id="save-add">সেভ করুন</button>
+      <button class="save-btn en-text" id="save-add-en" style="display:none;">Save</button>
+      <button class="close-btn bn-text">বন্ধ</button>
+      <button class="close-btn en-text" style="display:none;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal" id="edit-modal">
+  <div class="modal-box">
+    <h2 id="edit-title"></h2>
+    <textarea id="edit-area" rows="10"></textarea>
+    <div id="tot" class="bn-text">মোট পাওনা: ০ টাকা</div>
+    <div id="tot-en" class="en-text" style="display:none;">Total Due: 0 Taka</div>
+    <div style="text-align:right">
+      <button class="save-btn bn-text" id="save-edit">সেভ করুন</button>
+      <button class="save-btn en-text" id="save-edit-en" style="display:none;">Save</button>
+      <button class="close-btn bn-text">বন্ধ</button>
+      <button class="close-btn en-text" style="display:none;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Creator -->
+<button class="creator-btn bn-text" id="show-creator">Creator</button>
+<button class="creator-btn en-text" id="show-creator-en" style="display:none;">Creator</button>
+
+<div class="creator-overlay" id="creator-overlay">
+  <div class="creator-text">
+    <h2 class="bn-text">অ্যাপটি তৈরি করেছেন</h2>
+    <h2 class="en-text">The App is created by</h2>
+    <div class="name">HAMIM</div>
+    <button class="close-creator bn-text" id="close-creator">ঠিক আছে</button>
+    <button class="close-creator en-text" id="close-creator-en" style="display:none;">OK</button>
+  </div>
+</div>
+
+<script>
+// বাংলা সংখ্যা কনভার্ট
+function toEnglishNum(str) {
+  if (!str) return str;
+  const map = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+  return str.replace(/[০-৯]/g, m => map[m]);
+}
+
+let data = JSON.parse(localStorage.getItem('simpleDebt') || '[]');
+
+function redraw(filter = '') {
+  const ul = document.getElementById('projects');
+  ul.innerHTML = '';
+  data.forEach((entry, idx) => {
+    if (filter && !entry.name.toLowerCase().includes(filter.toLowerCase()) && !entry.notes.toLowerCase().includes(filter.toLowerCase())) return;
+
+    const sum = compute(entry.notes);
+    const li = document.createElement('li');
+    li.className = `item ${sum === 0 ? 'cleared' : ''}`;
+    li.innerHTML = `
+      <div>
+        <strong>${entry.name}</strong><br>
+        <small class="bn-text">মোট: ${sum} টাকা</small>
+        <small class="en-text">Total: ${sum} Taka</small>
+      </div>
+      <button class="del bn-text" onclick="remove(${idx});event.stopPropagation()">ডিলিট</button>
+      <button class="del en-text" onclick="remove(${idx});event.stopPropagation()" style="display:none;">Delete</button>
+    `;
+    li.onclick = () => edit(idx);
+    ul.appendChild(li);
+  });
+}
+
+function compute(txt = '') {
+  let res = 0;
+  txt.split('\n').forEach(row => {
+    row = row.trim();
+    if (!row) return;
+    const eng = toEnglishNum(row);
+    const match = eng.match(/-?\d+/);
+    if (match) res += parseInt(match[0], 10);
+  });
+  return res;
+}
+
+function edit(pos) {
+  const rec = data[pos];
+  document.getElementById('edit-title').textContent = rec.name;
+  const box = document.getElementById('edit-area');
+  box.value = rec.notes || '';
+  document.getElementById('tot').textContent = `মোট পাওনা: ${compute(box.value)} টাকা`;
+  document.getElementById('tot-en').textContent = `Total Due: ${compute(box.value)} Taka`;
+  document.getElementById('edit-modal').style.display = 'flex';
+
+  document.getElementById('save-edit').onclick = () => {
+    rec.notes = box.value;
+    localStorage.setItem('simpleDebt', JSON.stringify(data));
+    redraw();
+    document.getElementById('edit-modal').style.display = 'none';
+  };
+  document.getElementById('save-edit-en').onclick = document.getElementById('save-edit').onclick;
+}
+
+function remove(pos) {
+  if (!confirm(document.body.lang === 'bn' ? 'ডিলিট করবেন?' : 'Delete this record?')) return;
+  data.splice(pos, 1);
+  localStorage.setItem('simpleDebt', JSON.stringify(data));
+  redraw();
+}
+
+// Add Modal
+document.getElementById('add-new').onclick = document.getElementById('add-new-en').onclick = () => {
+  document.getElementById('cred-name').value = '';
+  document.getElementById('start-notes').value = '';
+  document.getElementById('add-modal').style.display = 'flex';
+};
+
+document.getElementById('save-add').onclick = document.getElementById('save-add-en').onclick = () => {
+  const nm = document.getElementById('cred-name').value.trim();
+  if (!nm) return alert(document.body.lang === 'bn' ? 'নাম দিন' : 'Enter name');
+  const notes = document.getElementById('start-notes').value.trim();
+  data.push({ name: nm, notes });
+  localStorage.setItem('simpleDebt', JSON.stringify(data));
+  redraw();
+  document.getElementById('add-modal').style.display = 'none';
+};
+
+// Settings Menu Toggle
+document.getElementById('settings').onclick = () => {
+  const menu = document.getElementById('settings-menu');
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+};
+
+// Language Modal Open (Settings বন্ধ করে Language খোলা)
+document.getElementById('change-lang-label').onclick = document.getElementById('change-lang-label-en').onclick = () => {
+  document.getElementById('settings-menu').style.display = 'none';  // Settings বন্ধ
+  document.getElementById('lang-modal').style.display = 'flex';     // Language খোলা
+};
+
+// Language Select
+document.getElementById('select-bn').onclick = () => {
+  document.body.lang = 'bn';
+  localStorage.setItem('lang', 'bn');
+  document.querySelectorAll('.bn-text').forEach(el => el.style.display = 'block');
+  document.querySelectorAll('.en-text').forEach(el => el.style.display = 'none');
+  redraw();
+  document.getElementById('lang-modal').style.display = 'none';
+};
+
+document.getElementById('select-en').onclick = () => {
+  document.body.lang = 'en';
+  localStorage.setItem('lang', 'en');
+  document.querySelectorAll('.bn-text').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.en-text').forEach(el => el.style.display = 'block');
+  redraw();
+  document.getElementById('lang-modal').style.display = 'none';
+};
+
+// Close Language Modal
+document.getElementById('close-lang').onclick = document.getElementById('close-lang-en').onclick = () => {
+  document.getElementById('lang-modal').style.display = 'none';
+};
+
+// Dark Mode Toggle
+document.getElementById('dark-toggle').onclick = () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+};
+
+// Clear All Data
+document.getElementById('clear-data').onclick = document.getElementById('clear-data-en').onclick = () => {
+  if (confirm(document.body.lang === 'bn' ? 'সব ডাটা পুরোপুরি মুছে ফেলবেন? এটা ফিরিয়ে আনা যাবে না!' : 'Clear all data? This cannot be undone!')) {
+    localStorage.removeItem('simpleDebt');
+    data = [];
+    redraw();
+    document.getElementById('settings-menu').style.display = 'none';
+    alert(document.body.lang === 'bn' ? 'সব ডাটা মুছে ফেলা হয়েছে!' : 'All data has been cleared!');
+  }
+};
+
+// Search Toggle
+document.getElementById('search-toggle').onclick = () => {
+  const box = document.getElementById('search-box');
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+  if (box.style.display === 'block') document.getElementById('search-input').focus();
+};
+
+// Search Filter
+document.getElementById('search-input').oninput = e => redraw(e.target.value);
+document.getElementById('search-input-en').oninput = e => redraw(e.target.value);
+
+// Load saved preferences
+if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+const savedLang = localStorage.getItem('lang') || 'bn';
+if (savedLang === 'en') {
+  document.body.lang = 'en';
+  document.querySelectorAll('.bn-text').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.en-text').forEach(el => el.style.display = 'block');
+}
+
+// Creator
+document.getElementById('show-creator').onclick = document.getElementById('show-creator-en').onclick = () => {
+  document.getElementById('creator-overlay').style.display = 'flex';
+};
+document.getElementById('close-creator').onclick = document.getElementById('close-creator-en').onclick = () => {
+  document.getElementById('creator-overlay').style.display = 'none';
+};
+document.getElementById('creator-overlay').onclick = e => {
+  if (e.target === document.getElementById('creator-overlay')) document.getElementById('creator-overlay').style.display = 'none';
+};
+
+document.addEventListener('click', e => {
+  if (!document.getElementById('settings').contains(e.target) && !document.getElementById('settings-menu').contains(e.target)) {
+    document.getElementById('settings-menu').style.display = 'none';
+  }
+});
+
+redraw();
+</script>
+</body>
+</html>
